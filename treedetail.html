@@ -1,0 +1,233 @@
+<!-- ====== ESTILOS (minimal, sin JS) ====== -->
+<style>
+    /* Árbol con líneas */
+    .tree, .tree ul { list-style: none; margin: 0; padding-left: 1rem; position: relative; }
+    .tree ul { margin-left: .6rem; }
+    .tree li { margin: .35rem 0; padding-left: .85rem; position: relative; }
+    .tree li::before {
+      content: ""; position: absolute; left: 0; top: 1.05rem;
+      width: .85rem; height: 0; border-top: 1px solid #c9c9c9;
+    }
+    .tree li::after {
+      content: ""; position: absolute; left: .38rem; top: -.45rem;
+      width: 0; height: 1.7rem; border-left: 1px solid #c9c9c9;
+    }
+    .tree > li::after { display: none; }
+    
+    /* Tarjetas */
+    .node {
+      display: inline-block; background: #fafafa; border: 1px solid #e3e3e3;
+      border-radius: .45rem; padding: .45rem .6rem; min-width: 18rem;
+      box-shadow: 0 1px 0 rgba(0,0,0,.02);
+    }
+    .node .title { font-weight: 600; }
+    .node code { background: #f3f3f3; padding: .1rem .3rem; border-radius: .25rem; }
+    
+    /* Router */
+    .router { background: #f6f7fb; border-color: #cfd6ff; }
+    .router .badge {
+      display: inline-block; font-size: .75rem; font-weight: 700;
+      color: #223; background: #e9edff; border: 1px solid #cfd6ff;
+      padding: .05rem .4rem; border-radius: .4rem; margin-left: .35rem;
+    }
+    
+    /* Tabla mini de atributos */
+    .kv { margin: .35rem 0 0; border-collapse: collapse; width: 100%; }
+    .kv th, .kv td { font-size: .85rem; padding: .18rem .25rem; border-bottom: 1px dashed #e8e8e8; }
+    .kv th { text-align: left; color: #666; width: 8rem; }
+    .kv td { color: #222; }
+    
+    /* details/summary (plegable) */
+    details > summary {
+      cursor: pointer; list-style: none; outline: none;
+      display: inline-block; margin-bottom: .35rem;
+    }
+    details > summary::-webkit-details-marker { display: none; }
+    summary .twisty {
+      display:inline-block; width:.9rem; text-align:center; margin-right:.3rem;
+      transition: transform .15s ease-in-out;
+    }
+    details[open] > summary .twisty { transform: rotate(90deg); }
+    .path-label { font-size: .8rem; color: #555; margin-left: .4rem; }
+    .cond { font-size: .78rem; color: #666; margin-top: .2rem; }
+    </style>
+    
+    <!-- ====== ÁRBOL PLEGABLE ====== -->
+    <ul class="tree">
+    
+      <!-- Pre-router (módulos lineales) -->
+      <li>
+        <div class="node">
+          <div class="title">[118] Insert order — <code>nocodb:create</code></div>
+          <table class="kv">
+            <tr><th>id</th><td>118</td></tr>
+            <tr><th>module</th><td>nocodb:create</td></tr>
+            <tr><th>name</th><td>Insert order</td></tr>
+          </table>
+        </div>
+      </li>
+    
+      <li>
+        <div class="node">
+          <div class="title">[119] Insert invoice — <code>nocodb:create</code></div>
+          <table class="kv">
+            <tr><th>id</th><td>119</td></tr>
+            <tr><th>module</th><td>nocodb:create</td></tr>
+            <tr><th>name</th><td>Insert invoice</td></tr>
+          </table>
+        </div>
+      </li>
+    
+      <li>
+        <div class="node">
+          <div class="title">[122] (sin nombre) — <code>regexp:Replace</code></div>
+          <table class="kv">
+            <tr><th>id</th><td>122</td></tr>
+            <tr><th>module</th><td>regexp:Replace</td></tr>
+            <tr><th>name</th><td>(sin nombre)</td></tr>
+          </table>
+        </div>
+      </li>
+    
+      <!-- Router 125 -->
+      <li>
+        <div class="node router">
+          <div class="title">ROUTER [125] BasicRouter <span class="badge">router</span></div>
+          <table class="kv">
+            <tr><th>id</th><td>125</td></tr>
+            <tr><th>module</th><td>router:Switch</td></tr>
+            <tr><th>name</th><td>BasicRouter</td></tr>
+          </table>
+        </div>
+    
+        <!-- Rutas del router 125 (plegables) -->
+        <ul>
+          <li>
+            <details open>
+              <summary>
+                <span class="twisty">▶</span>
+                <strong>Ruta A</strong>
+                <span class="path-label">(125 → …)</span>
+              </summary>
+              <div class="cond">Condición: {{116.statusCode}} == 200</div>
+    
+              <ul>
+                <li>
+                  <div class="node">
+                    <div class="title">[117] Crear archivo PDF — <code>google-drive:uploadAFile</code></div>
+                    <table class="kv">
+                      <tr><th>id</th><td>117</td></tr>
+                      <tr><th>module</th><td>google-drive:uploadAFile</td></tr>
+                      <tr><th>name</th><td>Crear archivo .PDF en Drive</td></tr>
+                    </table>
+                  </div>
+                </li>
+    
+                <li>
+                  <div class="node">
+                    <div class="title">[124] (sin nombre) — <code>nocodb:updateRecord</code></div>
+                    <table class="kv">
+                      <tr><th>id</th><td>124</td></tr>
+                      <tr><th>module</th><td>nocodb:updateRecord</td></tr>
+                      <tr><th>name</th><td>(sin nombre)</td></tr>
+                    </table>
+                  </div>
+                </li>
+    
+                <!-- Sub-router 200 dentro de Ruta A (también plegable) -->
+                <li>
+                  <div class="node router">
+                    <div class="title">ROUTER [200] Post-Drive Branch <span class="badge">router</span></div>
+                    <table class="kv">
+                      <tr><th>id</th><td>200</td></tr>
+                      <tr><th>module</th><td>router:Switch</td></tr>
+                      <tr><th>name</th><td>Post-Drive Branch</td></tr>
+                    </table>
+                  </div>
+    
+                  <ul>
+                    <li>
+                      <details>
+                        <summary>
+                          <span class="twisty">▶</span>
+                          <strong>Sub-ruta A1</strong>
+                        </summary>
+                        <div class="cond">Condición: pdf_hex != null</div>
+                        <ul>
+                          <li>
+                            <div class="node">
+                              <div class="title">[201] Notificar — <code>http:MakeRequest</code></div>
+                              <table class="kv">
+                                <tr><th>id</th><td>201</td></tr>
+                                <tr><th>module</th><td>http:MakeRequest</td></tr>
+                                <tr><th>method</th><td>POST</td></tr>
+                              </table>
+                            </div>
+                          </li>
+                          <li>
+                            <div class="node">
+                              <div class="title">[202] Log — <code>tools:Logger</code></div>
+                              <table class="kv">
+                                <tr><th>id</th><td>202</td></tr>
+                                <tr><th>module</th><td>tools:Logger</td></tr>
+                                <tr><th>level</th><td>info</td></tr>
+                              </table>
+                            </div>
+                          </li>
+                        </ul>
+                      </details>
+                    </li>
+    
+                    <li>
+                      <details>
+                        <summary>
+                          <span class="twisty">▶</span>
+                          <strong>Sub-ruta A2</strong>
+                        </summary>
+                        <ul>
+                          <li>
+                            <div class="node">
+                              <div class="title">[203] Cleanup — <code>tools:Cleanup</code></div>
+                              <table class="kv">
+                                <tr><th>id</th><td>203</td></tr>
+                                <tr><th>module</th><td>tools:Cleanup</td></tr>
+                              </table>
+                            </div>
+                          </li>
+                        </ul>
+                      </details>
+                    </li>
+                  </ul>
+                </li>
+                <!-- fin sub-router 200 -->
+              </ul>
+            </details>
+          </li>
+    
+          <li>
+            <details>
+              <summary>
+                <span class="twisty">▶</span>
+                <strong>Ruta B</strong>
+                <span class="path-label">(125 → …)</span>
+              </summary>
+              <div class="cond">Condición: otherwise</div>
+    
+              <ul>
+                <li>
+                  <div class="node">
+                    <div class="title">[126] (ejemplo) — <code>nocodb:updateRecord</code></div>
+                    <table class="kv">
+                      <tr><th>id</th><td>126</td></tr>
+                      <tr><th>module</th><td>nocodb:updateRecord</td></tr>
+                      <tr><th>name</th><td>(ejemplo)</td></tr>
+                    </table>
+                  </div>
+                </li>
+              </ul>
+            </details>
+          </li>
+        </ul>
+      </li>
+    </ul>
+    
