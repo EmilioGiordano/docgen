@@ -1,0 +1,49 @@
+<style>
+    .tree, .tree ul {list-style:none; margin:0; padding-left:1rem; position:relative}
+    .tree ul {margin-left:.5rem}
+    .tree li {margin: .25rem 0; padding-left:.75rem; position:relative}
+    .tree li::before {
+      content:""; position:absolute; left:0; top:.8rem;
+      width:.75rem; height:0; border-top:1px solid #bbb;
+    }
+    .tree li::after {
+      content:""; position:absolute; left:.35rem; top:-.4rem;
+      width:0; height:1.4rem; border-left:1px solid #bbb;
+    }
+    .tree > li::after {display:none}
+    .node {display:inline-block; padding:.1rem .4rem; border:1px solid #ddd; border-radius:.4rem; background:#fafafa}
+    .router {font-weight:600; border-color:#aaa; background:#f3f3f3}
+    </style>
+    
+    <ul class="tree">
+      <li><span class="node">Pre-router: 1 → 2 → 3 → <span class="router">ROUTER 125</span></span></li>
+      <li><span class="router node">ROUTER 125</span>
+        <ul>
+          <li><span class="node">Ruta A</span>
+            <ul>
+              <li><span class="node">4 → 5 → 6 → <span class="router">ROUTER 200</span></span></li>
+              <li><span class="router node">ROUTER 200</span>
+                <ul>
+                  <li><span class="node">Sub-ruta A1: 201 → 202</span></li>
+                  <li><span class="node">Sub-ruta A2: 203</span></li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li><span class="node">Ruta B: 7 → 8</span></li>
+          <li><span class="node">Ruta C</span>
+            <ul>
+              <li><span class="node">9 → 10 → <span class="router">ROUTER 300</span></span></li>
+              <li><span class="router node">ROUTER 300</span>
+                <ul>
+                  <li><span class="node">C1: 301 → 302 → 303</span></li>
+                  <li><span class="node">C2: 304</span></li>
+                  <li><span class="node">C3: 305 → 306</span></li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+    
