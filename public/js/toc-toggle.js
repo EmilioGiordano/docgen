@@ -14,6 +14,8 @@
       const doc = document.createElement('div');
       doc.className = 'doc';
       container.appendChild(doc);
+      // Controles globales
+      addGlobalControls(doc);
       doc.appendChild(rootUL);
   
       // 2) Marcar routers y rutas, añadir botón toggle
@@ -79,15 +81,170 @@
       details.className = 'condition';
       const summary = document.createElement('summary');
       summary.textContent = 'Condición';
-      const pre = document.createElement('pre');
-      const code = document.createElement('code');
-      code.textContent = expr;
-      pre.appendChild(code);
       details.appendChild(summary);
-      details.appendChild(pre);
+
+      const parsed = tryParseConditions(expr);
+      if(parsed){
+        const list = document.createElement('div');
+        list.className = 'condition-list';
+        parsed.items.forEach((item, idx)=>{
+          if(idx>0){
+            const sep = document.createElement('div');
+            sep.className = 'logic-sep';
+            sep.textContent = parsed.logic;
+            list.appendChild(sep);
+          }
+
+          const row = document.createElement('div');
+          row.className = 'cond-item';
+
+          const left = document.createElement('code');
+          left.className = 'cond-left';
+          left.textContent = item.left;
+
+          const op = document.createElement('span');
+          op.className = 'op-badge';
+          op.textContent = item.operatorLabel || item.operator;
+
+          row.appendChild(left);
+          row.appendChild(op);
+
+          if(item.right){
+            const right = document.createElement('code');
+            right.className = 'cond-right';
+            right.textContent = item.right;
+            row.appendChild(right);
+          }
+
+          list.appendChild(row);
+        });
+        details.appendChild(list);
+      } else {
+        const pre = document.createElement('pre');
+        const code = document.createElement('code');
+        code.textContent = expr;
+        pre.appendChild(code);
+        details.appendChild(pre);
+      }
 
       // Insertar justo después del header
       headerRow.after(details);
+    }
+
+    // Intenta parsear expresiones del tipo: and([cond(...),cond(...),...]) o or([...])
+    function tryParseConditions(expr){
+      if(!expr) return null;
+      const logicMatch = expr.match(/^(and|or)\s*\(/i);
+      if(!logicMatch) return null;
+      const logic = logicMatch[1].toUpperCase();
+      // Extraer todos los cond(...) de forma simple
+      const condMatches = expr.match(/cond\s*\(([^)]*)\)/gi);
+      if(!condMatches || !condMatches.length) return null;
+      const items = condMatches.map(raw=>{
+        const inner = raw.replace(/^cond\s*\(|\)$/gi,'');
+        // Separar por comas de primer nivel (no muy estricto, pero suficiente)
+        const parts = splitTopLevel(inner, ',');
+        const left = (parts[0]||'').trim();
+        const op = (parts[1]||'').trim();
+        const right = (parts[2]||'').trim();
+        return normalizeCond(left, op, right);
+      });
+      return { logic, items };
+    }
+
+    function splitTopLevel(str, sep){
+      const out = [];
+      let buf = '';
+      let depthPar = 0; // ()
+      let depthBrk = 0; // []
+      let depthBr  = 0; // {}
+      for(let i=0;i<str.length;i++){
+        const c = str[i];
+        if(c==='(') depthPar++;
+        else if(c===')') depthPar = Math.max(0, depthPar-1);
+        else if(c==='[') depthBrk++;
+        else if(c===']') depthBrk = Math.max(0, depthBrk-1);
+        else if(c==='{') depthBr++;
+        else if(c==='}') depthBr = Math.max(0, depthBr-1);
+        if(c===sep && depthPar===0 && depthBrk===0 && depthBr===0){
+          out.push(buf);
+          buf = '';
+          continue;
+        }
+        buf += c;
+      }
+      if(buf) out.push(buf);
+      return out;
+    }
+
+    function normalizeCond(left, op, right){
+      const clean = s => s
+        .replace(/^\{\{\s*/,'').replace(/\s*\}\}$/,'') // {{ ... }}
+        .trim();
+      const leftExpr = left ? clean(left) : '';
+      const operator = op || 'exist';
+      const rightExpr = right ? clean(right) : '';
+      const opMap = {
+        'exist':'EXISTS',
+        'text:equal':'=',
+        'number:greater':'>',
+        'number:less':'<',
+        'text:contain':'CONTAINS',
+        'text:regex':'MATCHES'
+      };
+      const operatorLabel = opMap[operator] || operator;
+      if(operator.toLowerCase()==='exist'){
+        return { left: leftExpr, operator, operatorLabel };
+      }
+      return { left: leftExpr, operator, operatorLabel, right: rightExpr };
+    }
+
+    // Toolbar global: expandir/contraer todos
+    function addGlobalControls(doc){
+      const bar = document.createElement('div');
+      bar.className = 'controls';
+
+      const btnExpand = document.createElement('button');
+      btnExpand.type = 'button';
+      btnExpand.className = 'ctrl-btn';
+      btnExpand.textContent = 'Expandir todo';
+      btnExpand.addEventListener('click', expandAll);
+
+      const btnCollapse = document.createElement('button');
+      btnCollapse.type = 'button';
+      btnCollapse.className = 'ctrl-btn';
+      btnCollapse.textContent = 'Contraer todo';
+      btnCollapse.addEventListener('click', collapseAll);
+
+      bar.appendChild(btnExpand);
+      bar.appendChild(btnCollapse);
+      doc.appendChild(bar);
+    }
+
+    function expandAll(){
+      const rows = document.querySelectorAll('.toggle-row');
+      rows.forEach(row=>{
+        const li = row.parentElement;
+        const ul = nextDirectUL(li);
+        if(!ul) return;
+        ul.classList.remove('hidden');
+        const btn = row.querySelector('.toggle-btn');
+        if(btn) btn.setAttribute('data-open','true');
+      });
+      document.querySelectorAll('details.condition').forEach(d=>d.open = true);
+    }
+
+    function collapseAll(){
+      const rows = document.querySelectorAll('.toggle-row');
+      rows.forEach(row=>{
+        const li = row.parentElement;
+        const ul = nextDirectUL(li);
+        if(!ul) return;
+        ul.classList.add('hidden');
+        const btn = row.querySelector('.toggle-btn');
+        if(btn) btn.setAttribute('data-open','false');
+      });
+      document.querySelectorAll('details.condition').forEach(d=>d.open = false);
     }
   
     // Devuelve el <ul> hermano directo (o el primero inmediato) que contenga los hijos de ese li
