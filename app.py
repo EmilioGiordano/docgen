@@ -28,16 +28,21 @@ HTML_FORM = """
 async def index():
     return HTML_FORM
 
-
 @app.post("/build")
 async def build(file: UploadFile = File(...)):
     if not file.filename.lower().endswith(".json"):
         raise HTTPException(status_code=400, detail="El archivo debe ser .json")
     try:
         data = await file.read()
-        out_html = run_pipeline(data, ROOT)
-        # Limpieza opcional (mantener solo últimas ejecuciones)
-        clean_runs(ROOT, keep_last=10)
+
+        # usar el nombre del archivo como título (sin extensión)
+        blueprint_title = Path(file.filename).stem
+
+        out_html = run_pipeline(
+            blueprint_bytes=data,
+            workdir=ROOT,
+            blueprint_title=blueprint_title,  # <-- nuevo arg
+        )
         return FileResponse(path=out_html, filename=out_html.name, media_type="text/html")
     except PipelineError as e:
         raise HTTPException(status_code=500, detail=str(e))
