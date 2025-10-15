@@ -1,67 +1,78 @@
 (function(){
-    // 1) Envolver el UL raíz dentro de un contenedor bonito (no modifica contenido)
+    // 1) Wrap the root UL inside a nice container (doesn't modify content)
     document.addEventListener('DOMContentLoaded', function(){
       const rootUL = document.querySelector('body > ul');
       if(!rootUL) return;
-      // Crear container si no existe
+      // Create container if it doesn't exist
       let container = document.querySelector('.container');
       if(!container){
         container = document.createElement('div');
         container.className = 'container';
         document.body.prepend(container);
       }
-      // Crear card-doc y mover UL adentro
+      // Create card-doc and move UL inside
       const doc = document.createElement('div');
       doc.className = 'doc';
       container.appendChild(doc);
-      // Controles globales
+      // Global controls
       addGlobalControls(doc);
       doc.appendChild(rootUL);
   
-      // 2) Marcar routers y rutas, añadir botón toggle
+      // 2) Mark routers and routes, add toggle button
       enhanceToggles(rootUL);
     });
   
     function enhanceToggles(root) {
-      // A) ROUTER: <li> cuyo primer texto empieza con "ROUTER ["
+      // A) ROUTER: <li> whose first text starts with "ROUTER ["
       const liAll = root.querySelectorAll('li');
       liAll.forEach(li=>{
         const firstNode = li.firstChild;
         const text = (firstNode && firstNode.nodeType===Node.TEXT_NODE) ? firstNode.nodeValue.trim() : '';
         const isRouter = text.startsWith('ROUTER [');
   
-        // B) Ruta: <li> que contenga <strong> cuyo texto empieza con "Ruta:"
+        // B) Route: <li> containing <strong> whose text starts with "Ruta:"
         const strong = li.querySelector(':scope > strong');
         const isRoute = strong && strong.textContent.trim().startsWith('Ruta');
   
         if(isRouter){
-          // Estructura: li -> "ROUTER [id] label" + (opcional) <ul> hijos
+          // Structure: li -> "ROUTER [id] label" + optional <ul> children
           const childUL = nextDirectUL(li);
-          const row = wrapHeader(li, text, 'router-title'); // remueve texto inicial
+          const row = wrapHeader(li, text, 'router-title'); // removes initial text
           addToggle(row, childUL);
           if(childUL) childUL.classList.add('block');
         } else if(isRoute){
           const childUL = nextDirectUL(li);
-          const row = wrapHeader(li, strong, 'route-title'); // mueve <strong> a cabecera
+          const row = wrapHeader(li, strong, 'route-title'); // moves <strong> to header
           addToggle(row, childUL);
           if(childUL) childUL.classList.add('block');
-          // Condiciones minimalistas
+          // Minimal conditions
           enhanceConditions(li, row);
         } else {
-          // Hoja (módulo simple): darle estilo sutil
+          // Leaf (simple module): give subtle styling
           li.classList.add('leaf');
         }
       });
     }
 
-    // Busca "Condicion:" o "Condición:" y lo mueve a un bloque <details>
+    // Find "Condicion:" or "Condición:" and move it to a <details> block
     function enhanceConditions(li, headerRow){
       const em = li.querySelector(':scope > em');
       if(!em) return;
       const label = (em.textContent || '').trim().toLowerCase();
       if(label !== 'condicion:' && label !== 'condición:') return;
 
-      // Recolectar el texto de la expresión a continuación del <em>
+      // Remove residual dash " - " or other text between the header and the <em>
+      let probe = headerRow.nextSibling;
+      while(probe && probe !== em){
+        const next = probe.nextSibling;
+        if(probe.nodeType === Node.TEXT_NODE){
+          const txt = (probe.nodeValue || '').trim();
+          if(txt === '-' || txt === '') li.removeChild(probe);
+        }
+        probe = next;
+      }
+
+      // Gather the expression text following the <em>
       let expr = '';
       let n = em.nextSibling;
       while(n){
@@ -71,12 +82,12 @@
         n = n.nextSibling;
         li.removeChild(toRemove);
       }
-      // Limpiar el propio <em>
+      // Remove the <em> itself
       em.remove();
       expr = (expr || '').trim();
       if(!expr) return;
 
-      // Crear bloque <details> minimal
+      // Create minimal <details> block
       const details = document.createElement('details');
       details.className = 'condition';
       const summary = document.createElement('summary');
@@ -127,22 +138,22 @@
         details.appendChild(pre);
       }
 
-      // Insertar justo después del header
+      // Insert right after the header
       headerRow.after(details);
     }
 
-    // Intenta parsear expresiones del tipo: and([cond(...),cond(...),...]) o or([...])
+    // Try to parse expressions like: and([cond(...),cond(...),...]) or or([...])
     function tryParseConditions(expr){
       if(!expr) return null;
       const logicMatch = expr.match(/^(and|or)\s*\(/i);
       if(!logicMatch) return null;
       const logic = logicMatch[1].toUpperCase();
-      // Extraer todos los cond(...) de forma simple
+      // Extract all cond(...) in a simple way
       const condMatches = expr.match(/cond\s*\(([^)]*)\)/gi);
       if(!condMatches || !condMatches.length) return null;
       const items = condMatches.map(raw=>{
         const inner = raw.replace(/^cond\s*\(|\)$/gi,'');
-        // Separar por comas de primer nivel (no muy estricto, pero suficiente)
+        // Split by top-level commas (not very strict, but sufficient)
         const parts = splitTopLevel(inner, ',');
         const left = (parts[0]||'').trim();
         const op = (parts[1]||'').trim();
@@ -199,7 +210,7 @@
       return { left: leftExpr, operator, operatorLabel, right: rightExpr };
     }
 
-    // Toolbar global: expandir/contraer todos
+    // Global toolbar: expand/collapse all
     function addGlobalControls(doc){
       const bar = document.createElement('div');
       bar.className = 'controls';
@@ -247,9 +258,9 @@
       document.querySelectorAll('details.condition').forEach(d=>d.open = false);
     }
   
-    // Devuelve el <ul> hermano directo (o el primero inmediato) que contenga los hijos de ese li
+    // Return the direct sibling <ul> (or the first immediate one) that contains the children of that li
     function nextDirectUL(li){
-      // Puede estar como li > ul o como hermano siguiente (según cómo se generó)
+      // It may be as li > ul or as the next sibling (depending on how it was generated)
       let ul = li.querySelector(':scope > ul');
       if(ul) return ul;
       let n = li.nextSibling;
@@ -258,8 +269,8 @@
       return null;
     }
   
-    // Envuelve la cabecera en .toggle-row
-    // Si 'label' es string -> crea span; si es elemento (p.ej. <strong>) lo mueve dentro.
+    // Wrap the header in .toggle-row
+    // If 'label' is a string -> create span; if it's an element (e.g., <strong>) move it inside.
     function wrapHeader(li, label, titleClass){
       const row = document.createElement('div');
       row.className = 'toggle-row';
@@ -272,7 +283,7 @@
       title.className = titleClass;
   
       if(typeof label === 'string'){
-        // Meter badge si detectamos patrón "ROUTER [id]"
+        // Insert badge if we detect the pattern "ROUTER [id]"
         const m = label.match(/^ROUTER\s+\[(\d+)\]\s*(.*)$/);
         if(m){
           const [ , id, rest ] = m;
@@ -288,10 +299,10 @@
         } else {
           title.textContent = label;
         }
-        // limpiar texto original del li
+        // clear original li text
         li.firstChild && li.removeChild(li.firstChild);
       } else {
-        // label es un elemento (e.g., <strong>Ruta: ...>)
+        // label is an element (e.g., <strong>Ruta: ...>)
         title.appendChild(label);
       }
   
@@ -301,7 +312,7 @@
       return row;
     }
   
-    // Agrega funcionalidad de plegado
+    // Add collapsing functionality
     function addToggle(row, contentUL){
       const btn = row.querySelector('.toggle-btn');
       if(!contentUL){ 
