@@ -17,14 +17,24 @@ load_facts(File) :-
   ensure_loaded(File).
 
 render_html(S) :-
-  format(S, "<!doctype html><meta charset=\"utf-8\"><ul>~n", []),
+  format(S, "<!doctype html>~n", []),
+  format(S, "<html>~n", []),
+  format(S, "<head>~n", []),
+  format(S, "<meta charset=\"utf-8\">~n", []),
+  format(S, "<link rel=\"stylesheet\" href=\"../public/css/theme-light.css\">~n", []),
+  format(S, "</head>~n", []),
+  format(S, "<script src=\"../public/js/toc-toggle.js\" defer></script>~n", []),
+  format(S, "<body>~n", []),
+  format(S, "<ul>~n", []),
 
   forall(pre_root_module(Id), node_li(S, Id)),
 
   forall( (router(Rid, Type, Name, Attrs), \+ appears_in_any_path_router(Rid)),
           router_li(S, Rid, Type, Name, Attrs) ),
 
-  format(S, "</ul>~n", []).
+  format(S, "</ul>~n", []),
+  format(S, "</body>~n", []),
+  format(S, "</html>~n", []).
 
 pre_root_module(Id) :-
   module(Id, _, _, _),
