@@ -43,11 +43,51 @@
           const row = wrapHeader(li, strong, 'route-title'); // mueve <strong> a cabecera
           addToggle(row, childUL);
           if(childUL) childUL.classList.add('block');
+          // Condiciones minimalistas
+          enhanceConditions(li, row);
         } else {
           // Hoja (módulo simple): darle estilo sutil
           li.classList.add('leaf');
         }
       });
+    }
+
+    // Busca "Condicion:" o "Condición:" y lo mueve a un bloque <details>
+    function enhanceConditions(li, headerRow){
+      const em = li.querySelector(':scope > em');
+      if(!em) return;
+      const label = (em.textContent || '').trim().toLowerCase();
+      if(label !== 'condicion:' && label !== 'condición:') return;
+
+      // Recolectar el texto de la expresión a continuación del <em>
+      let expr = '';
+      let n = em.nextSibling;
+      while(n){
+        if(n.nodeType === Node.ELEMENT_NODE && n.tagName === 'UL') break;
+        if(n.nodeType === Node.TEXT_NODE) expr += n.nodeValue;
+        const toRemove = n;
+        n = n.nextSibling;
+        li.removeChild(toRemove);
+      }
+      // Limpiar el propio <em>
+      em.remove();
+      expr = (expr || '').trim();
+      if(!expr) return;
+
+      // Crear bloque <details> minimal
+      const details = document.createElement('details');
+      details.className = 'condition';
+      const summary = document.createElement('summary');
+      summary.textContent = 'Condición';
+      const pre = document.createElement('pre');
+      const code = document.createElement('code');
+      code.textContent = expr;
+      pre.appendChild(code);
+      details.appendChild(summary);
+      details.appendChild(pre);
+
+      // Insertar justo después del header
+      headerRow.after(details);
     }
   
     // Devuelve el <ul> hermano directo (o el primero inmediato) que contenga los hijos de ese li

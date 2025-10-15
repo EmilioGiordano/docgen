@@ -178,6 +178,27 @@
     font-weight: 600;
     color: var(--accent-2);
   }
+
+  /* Condiciones minimalistas */
+  details.condition{
+    margin: 6px 0 6px 48px;
+    border-left: 2px dashed var(--border);
+    padding-left: 12px;
+  }
+  details.condition > summary{
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--muted);
+    outline: none;
+  }
+  details.condition pre{
+    margin: 8px 0 0 0;
+    padding: 8px 12px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow-x: auto;
+  }
   
   * {
     transition: all 0.2s ease;
