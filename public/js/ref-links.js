@@ -4,7 +4,7 @@
     linkifyConditionReferences();
   });
 
-  // Asigna id="mod-<N>" a cada módulo hoja cuyo texto empieza con "[N]"
+  // Assign id="mod-<N>" to each leaf module whose text starts with "[N]"
   function indexModulesById(){
     const lis = document.querySelectorAll('li');
     lis.forEach(li=>{
@@ -17,11 +17,11 @@
     });
   }
 
-  // Marca referencias en condiciones (e.g., "1.attachments[]...") y permite navegar
+  // Mark references in conditions (e.g., "1.attachments[]...") and enable navigation
   function linkifyConditionReferences(){
     const doc = document.querySelector('.doc') || document;
 
-    // Señal visual y tooltip para referencias detectadas
+    // Visual cue and tooltip for detected references
     document.querySelectorAll('code.cond-left, code.cond-right').forEach(code=>{
       const ref = extractLeadingModuleRef(code.textContent);
       if(ref){
@@ -30,7 +30,7 @@
       }
     });
 
-    // Delegación de eventos: click para desplazarse al módulo
+    // Event delegation: click to scroll to the module
     doc.addEventListener('click', function(ev){
       const el = ev.target;
       if(!(el instanceof Element)) return;
@@ -40,10 +40,10 @@
       const target = document.getElementById(`mod-${refId}`);
       if(!target) return;
       const controls = document.querySelector('.controls');
-      const offset = (controls ? controls.offsetHeight : 0) + 12; // compensar barra sticky
+      const offset = (controls ? controls.offsetHeight : 0) + 12; // compensate for sticky bar
       const y = target.getBoundingClientRect().top + window.pageYOffset - offset;
       window.scrollTo({ top: y, behavior: 'smooth' });
-      // activar efecto tras un pequeño delay para coincidir con el fin del scroll
+      // activate highlight effect after a short delay to align with scroll end
       setTimeout(()=>{
         target.classList.add('flash-target');
         setTimeout(()=> target.classList.remove('flash-target'), 4500);
@@ -51,7 +51,7 @@
     });
   }
 
-  // Extrae el número de módulo al inicio de la expresión, p.ej. "9.`$1`" o "1.attachments[]"
+  // Extract the module number at the start of the expression, e.g., "9.`$1`" or "1.attachments[]"
   function extractLeadingModuleRef(text){
     if(!text) return null;
     const m = String(text).trim().match(/^(\d+)\./);
