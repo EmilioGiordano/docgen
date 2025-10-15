@@ -21,12 +21,14 @@ render_html(S) :-
   format(S, "<html>~n", []),
   format(S, "<head>~n", []),
   format(S, "<meta charset=\"utf-8\">~n", []),
+  scenario_title_tag(S),
   format(S, "<link rel=\"stylesheet\" href=\"../public/css/theme-light.css\">~n", []),
   format(S, "<link rel=\"stylesheet\" href=\"../public/css/ref-links.css\">~n", []),
   format(S, "</head>~n", []),
   format(S, "<script src=\"../public/js/toc-toggle.js\" defer></script>~n", []),
   format(S, "<script src=\"../public/js/ref-links.js\" defer></script>~n", []),
   format(S, "<body>~n", []),
+  scenario_header(S),
   format(S, "<ul>~n", []),
 
   forall(pre_root_module(Id), node_li(S, Id)),
@@ -88,3 +90,27 @@ render_nodes_list(S, [Id|T]) :-
 
 nz("", "(sin nombre)") :- !.
 nz(X, X).
+
+% -- Optional scenario support --
+% If a fact scenario/1 exists (e.g., scenario('Name - CODE')), add <title> and a header.
+scenario_title_tag(S) :-
+  ( current_predicate(scenario/1), scenario(Full), scenario_parts(Full, Name, _Code)
+  -> format(S, "<title>~w</title>~n", [Name])
+  ; true ).
+
+scenario_header(S) :-
+  ( current_predicate(scenario/1), scenario(Full), scenario_parts(Full, Name, Code)
+  -> format(S, "<div class=\"scenario-title\" data-scenario-id=\"~w\">~n", [Code]),
+     format(S, "  <span class=\"scenario-badge\">SCENARIO</span>~n", []),
+     format(S, "  <span class=\"scenario-name\">~w</span>~n", [Name]),
+     ( Code \= "" -> format(S, "  <span class=\"scenario-code\">— ~w</span>~n", [Code]) ; true ),
+     format(S, "</div>~n", [])
+  ; true ).
+
+% scenario_parts('Name - CODE', 'Name', 'CODE'). If no code, return Code="".
+scenario_parts(Full, Name, Code) :-
+  atom(Full),
+  ( atomic_list_concat(Parts, ' - ', Full), Parts = [Only]
+  -> Name = Only, Code = ""
+  ; atomic_list_concat(Parts, ' - ', Full), append(NameParts, [Code], Parts), atomic_list_concat(NameParts, ' - ', Name)
+  ).

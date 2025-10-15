@@ -2,6 +2,7 @@
   document.addEventListener('DOMContentLoaded', function(){
     indexModulesById();
     linkifyConditionReferences();
+    moveScenarioTitleIntoDoc();
   });
 
   // Assign id="mod-<N>" to each leaf module whose text starts with "[N]"
@@ -49,6 +50,15 @@
         setTimeout(()=> target.classList.remove('flash-target'), 4500);
       }, 220);
     });
+  }
+
+  // Move scenario header (if present) into the .doc container as the top element
+  function moveScenarioTitleIntoDoc(){
+    const title = document.querySelector('.scenario-title');
+    if(!title) return;
+    const doc = document.querySelector('.doc');
+    if(!doc) return;
+    doc.prepend(title);
   }
 
   // Extract the module number at the start of the expression, e.g., "9.`$1`" or "1.attachments[]"
