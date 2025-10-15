@@ -79,6 +79,10 @@ def node($n):
     { id: $n.id, module: $n.module, name: ($n.metadata.designer.name? // "") }
   end;
 
-[
-  (.flow // [])[] | node(.)
-]
+(
+  [ { "scenario-name": (.name // "") } ]
+  +
+  [
+    (.flow // [])[] | node(.)
+  ]
+)
