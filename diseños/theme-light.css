@@ -37,7 +37,6 @@
     min-height: calc(100vh - 64px);
   }
   
-  /* Cabeceras (Router / Ruta) con botón */
   .toggle-row{
     display: flex; 
     align-items: center; 
@@ -118,7 +117,6 @@
     font-size: 15px;
   }
   
-  /* Bloques anidados */
   .block{
     margin: 8px 0 16px 32px; 
     padding-left: 12px; 
@@ -130,7 +128,6 @@
   
   .hidden{display: none}
   
-  /* Hojas (módulos simples) */
   .leaf{
     padding: 10px 16px; 
     border-radius: 10px; 
@@ -177,18 +174,15 @@
     border-left-style: solid;
   }
   
-  /* Mejoras adicionales para profesionalismo */
   strong {
     font-weight: 600;
     color: var(--accent-2);
   }
   
-  /* Animaciones suaves */
   * {
     transition: all 0.2s ease;
   }
   
-  /* Scrollbar personalizada */
   ::-webkit-scrollbar {
     width: 8px;
   }
