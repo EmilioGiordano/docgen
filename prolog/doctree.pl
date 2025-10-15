@@ -22,8 +22,10 @@ render_html(S) :-
   format(S, "<head>~n", []),
   format(S, "<meta charset=\"utf-8\">~n", []),
   format(S, "<link rel=\"stylesheet\" href=\"../public/css/theme-light.css\">~n", []),
+  format(S, "<link rel=\"stylesheet\" href=\"../public/css/ref-links.css\">~n", []),
   format(S, "</head>~n", []),
   format(S, "<script src=\"../public/js/toc-toggle.js\" defer></script>~n", []),
+  format(S, "<script src=\"../public/js/ref-links.js\" defer></script>~n", []),
   format(S, "<body>~n", []),
   format(S, "<ul>~n", []),
 
