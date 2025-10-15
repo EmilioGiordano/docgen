@@ -115,6 +115,14 @@ def nodes_list_to_prolog($RID):
 
 # ---------- emitters ----------
 
+def get_scenario_name:
+  ( [ all_objects | select(has("scenario-name")) | .["scenario-name"] ]
+    | .[0]? // ""
+  );
+
+def emit_scenario:
+  "scenario(" + q(get_scenario_name) + ").";
+
 def emit_modules($RID):
   ( [ all_objects
       | select(has("id") and has("module"))
@@ -154,4 +162,4 @@ def emit_paths($RID):
 
 # ---------- output ----------
 ( router_ids ) as $RID
-| (emit_modules($RID), emit_routers, emit_paths($RID))
+| (emit_scenario, emit_modules($RID), emit_routers, emit_paths($RID))
