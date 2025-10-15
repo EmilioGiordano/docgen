@@ -1,0 +1,145 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>ALGUen ConfirmaciÔö£Ôöén Conmasa (IA) TESTEANDO -Ôö¼├íPQud7SPG</title>
+<link rel="stylesheet" href="../public/css/theme-light.css">
+<link rel="stylesheet" href="../public/css/ref-links.css">
+</head>
+<script src="../public/js/toc-toggle.js" defer></script>
+<script src="../public/js/ref-links.js" defer></script>
+<body>
+<div class="scenario-title" data-scenario-id="">
+  <span class="scenario-badge">SCENARIO</span>
+  <span class="scenario-name">ALGUen ConfirmaciÔö£Ôöén Conmasa (IA) TESTEANDO -Ôö¼├íPQud7SPG</span>
+</div>
+<ul>
+<li>[1]  - <code>gateway:CustomMailHook</code></li>
+<li>ROUTER [2] if (hayProforma?)<ul>
+<li><strong>Ruta: No</strong></li>
+<ul>
+<li>[3] Obtiene Conv ID - <code>regexp:Parser</code></li>
+<li>[4] AÔö£ÔûÆade nota - <code>freescout:MakeAPICall</code></li>
+<li>[5] AÔö£ÔûÆade "(Gestionado)" al asunto - <code>freescout:MakeAPICall</code></li>
+</ul>
+<li><strong>Ruta: Si</strong> - <em>Condicion:</em> and([cond({{1.attachments[].data}},exist),cond({{1.attachments[].contentType}},text:equal,application/pdf)])</li>
+<ul>
+<li>[8]  - <code>googlecloudvision:DetectTextInFile</code></li>
+<li>[9] Extraigo NÔö¼Ôûæ de conversaciÔö£Ôöén, pedido y costes - <code>regexp:Parser</code></li>
+<li>ROUTER [10] if (matchea?)<ul>
+<li><strong>Ruta: Si encuentra los datos</strong> - <em>Condicion:</em> and([cond({{9.`$1`}},exist),cond({{9.`$2`}},exist),cond({{9.`$3`}},exist)])</li>
+<ul>
+<li>[11] Buscar la tarjeta del pedido - <code>trello:searchCards</code></li>
+<li>ROUTER [13] if (mÔö£├¡sDe1Tarjeta)<ul>
+<li><strong>Ruta: No</strong> - <em>Condicion:</em> and([cond({{11.`__IMTLENGTH__`}},text:equal,1),cond({{11.name}},text:contain,CONMASA)])</li>
+<ul>
+<li>ROUTER [14] if (archivada?)<ul>
+<li><strong>Ruta: No</strong> - <em>Condicion:</em> and([cond({{11.closed}},text:equal,{{false}})])</li>
+<ul>
+<li>ROUTER [15] if (mdfSinIVA)<ul>
+<li><strong>Ruta: Si</strong> - <em>Condicion:</em> and([cond({{11.name}},text:contain,mdf sin IVA)])</li>
+<ul>
+<li>[17] Precio que abona cliente - <code>regexp:Parser</code></li>
+<li>ROUTER [24] if (precioCoincide)<ul>
+<li><strong>Ruta: Costes correctos</strong> - <em>Condicion:</em> and([cond({{parseNumber(replace(9.`$3`; "."; ""); ",")}},number:greater,{{parseNumber(17.`$1`; ".") * 0.5}}),cond({{parseNumber(17.`$1`; ".")}},number:greater,{{parseNumber(replace(9.`$3`; "."; ); ",")}})])</li>
+<ul>
+<li>[29] Filtro el Ôö£Ôòæltimo correo - <code>regexp:Parser</code></li>
+<li>[28] Obtiene formato de plazo - <code>openai-gpt-3:CreateCompletion</code></li>
+<li>[100] Resumir Ôö£Ôòæltimo correo - <code>openai-gpt-3:CreateCompletion</code></li>
+<li>[61] Extrae campo "confirmado" - <code>trello:makeApiCall</code></li>
+<li>[62] Marca campo confirmado - <code>trello:setACustomFieldOnACard</code></li>
+<li>[63] Obtiene plazo - <code>regexp:Parser</code></li>
+<li>[101] Reemplazar mdf sin IVA - <code>trello:editACard</code></li>
+<li>[64] AÔö£ÔûÆadir "Gestionado" al asunto - <code>freescout:MakeAPICall</code></li>
+<li>[65] Obtiene la conversaciÔö£Ôöén - <code>freescout:MakeAPICall</code></li>
+<li>ROUTER [83] if (nosIndicaronPlazo)<ul>
+<li><strong>Ruta: Si nos indicaron un plazo</strong></li>
+<ul>
+<li>ROUTER [84] if (superaPlazoInicial)<ul>
+<li><strong>Ruta: No supera el plazo</strong></li>
+<ul>
+<li>[85] Comentar - <code>trello:createACommentInACard</code></li>
+<li>ROUTER [86] if (envÔö£┬íanEllos?)<ul>
+<li><strong>Ruta: Ruta A</strong></li>
+<ul>
+<li>[87] Confirma pedido - <code>freescout:MakeAPICall</code></li>
+</ul>
+<li><strong>Ruta: THEM</strong> - <em>Condicion:</em> and([cond({{11.name}},text:contain,CONMASA THEM)])</li>
+<ul>
+<li>[88] Confirma pedido - <code>freescout:MakeAPICall</code></li>
+</ul>
+</ul></li>
+</ul>
+<li><strong>Ruta: Supera el plazo inicial</strong> - <em>Condicion:</em> and([cond({{parseDate(28.result; "D/M/YYYY") > parseDate(63.`$1`; "D/M/YYYY")}},text:equal,{{true}})])</li>
+<ul>
+<li>[89] Comentar - <code>trello:createACommentInACard</code></li>
+<li>[90] Vencer hoy - <code>trello:editACard</code></li>
+<li>[95] Confirma pedido - <code>freescout:MakeAPICall</code></li>
+</ul>
+</ul></li>
+</ul>
+<li><strong>Ruta: </strong> - <em>Condicion:</em> and([cond({{28.result}},text:contain,No hay)])</li>
+<ul>
+<li>[91] Comentar - <code>trello:createACommentInACard</code></li>
+<li>ROUTER [92] if (envÔö£┬íanEllos?)<ul>
+<li><strong>Ruta: Ruta A</strong></li>
+<ul>
+<li>[93] Confirma pedido - <code>freescout:MakeAPICall</code></li>
+</ul>
+<li><strong>Ruta: THEM</strong> - <em>Condicion:</em> and([cond({{11.name}},text:contain,CONMASA THEM)])</li>
+<ul>
+<li>[94] Confirma pedido - <code>freescout:MakeAPICall</code></li>
+</ul>
+</ul></li>
+</ul>
+</ul></li>
+</ul>
+<li><strong>Ruta: Ganamos mucho</strong></li>
+<ul>
+<li>[30] Comentar ganamos mucho - <code>trello:createACommentInACard</code></li>
+<li>[32] Vencer hoy - <code>trello:editACard</code></li>
+<li>[33] AÔö£ÔûÆadir "Gestionado" al asunto - <code>freescout:MakeAPICall</code></li>
+</ul>
+<li><strong>Ruta: Perdemos dinero</strong> - <em>Condicion:</em> and([cond({{parseNumber(9.`$3`; ",")}},number:greater,{{parseNumber(17.`$1`; ".")}})])</li>
+<ul>
+<li>[31] Comentar error en precio - <code>trello:createACommentInACard</code></li>
+<li>[34] Vencer hoy - <code>trello:editACard</code></li>
+<li>[35] Obtiene la conversaciÔö£Ôöén - <code>freescout:MakeAPICall</code></li>
+<li>[36] Pausa pedido - <code>freescout:MakeAPICall</code></li>
+<li>[37] AÔö£ÔûÆadir "Gestionado" al asunto - <code>freescout:MakeAPICall</code></li>
+<li>[38] [PS] Estado Incidencia (68) - <code>http:ActionSendDataAPIKeyAuth</code></li>
+</ul>
+</ul></li>
+</ul>
+<li><strong>Ruta: No</strong></li>
+<ul>
+<li>[22] Comentar por quÔö£┬« no se actualizÔö£Ôöé mdf sin iva - <code>trello:createACommentInACard</code></li>
+<li>[23] AÔö£ÔûÆadir "Gestionado" al asunto - <code>freescout:MakeAPICall</code></li>
+</ul>
+</ul></li>
+</ul>
+<li><strong>Ruta: Si estaba archivada</strong></li>
+<ul>
+<li>[18] Desarchivar - <code>trello:archiveOrUnarchiveACard</code></li>
+<li>[19] Comentar - <code>trello:createACommentInACard</code></li>
+<li>[20] Vencer hoy - <code>trello:editACard</code></li>
+<li>[21] AÔö£ÔûÆadir "Gestionado" al asunto - <code>freescout:MakeAPICall</code></li>
+</ul>
+</ul></li>
+</ul>
+<li><strong>Ruta: Si es +1 o no es la tarjeta</strong></li>
+<ul>
+<li>[16] No encuentra tarjeta o es mÔö£├¡s de 1 - <code>google-sheets:addRow</code></li>
+</ul>
+</ul></li>
+</ul>
+<li><strong>Ruta: Ruta B</strong></li>
+<ul>
+<li>[12] No encuentra match - <code>google-sheets:addRow</code></li>
+</ul>
+</ul></li>
+</ul>
+</ul></li>
+</ul>
+</body>
+</html>

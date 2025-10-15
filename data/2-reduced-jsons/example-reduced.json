@@ -1,0 +1,546 @@
+[
+  {
+    "scenario-name": "ALGUen Confirmaci├│n Conmasa (IA) TESTEANDO -┬áPQud7SPG"
+  },
+  {
+    "id": 1,
+    "module": "gateway:CustomMailHook",
+    "name": ""
+  },
+  {
+    "id": 2,
+    "module": "builtin:BasicRouter",
+    "name": "if (hayProforma?)",
+    "paths": [
+      {
+        "route": "No",
+        "index": 1,
+        "conditions": [],
+        "nodes": [
+          {
+            "id": 3,
+            "module": "regexp:Parser",
+            "name": "Obtiene Conv ID"
+          },
+          {
+            "id": 4,
+            "module": "freescout:MakeAPICall",
+            "name": "A├▒ade nota"
+          },
+          {
+            "id": 5,
+            "module": "freescout:MakeAPICall",
+            "name": "A├▒ade \"(Gestionado)\" al asunto"
+          }
+        ]
+      },
+      {
+        "route": "Si",
+        "index": 2,
+        "conditions": [
+          [
+            {
+              "a": "{{1.attachments[].data}}",
+              "o": "exist"
+            },
+            {
+              "a": "{{1.attachments[].contentType}}",
+              "b": "application/pdf",
+              "o": "text:equal"
+            }
+          ]
+        ],
+        "nodes": [
+          {
+            "id": 8,
+            "module": "googlecloudvision:DetectTextInFile",
+            "name": ""
+          },
+          {
+            "id": 9,
+            "module": "regexp:Parser",
+            "name": "Extraigo N┬░ de conversaci├│n, pedido y costes"
+          },
+          {
+            "id": 10,
+            "module": "builtin:BasicRouter",
+            "name": "if (matchea?)",
+            "paths": [
+              {
+                "route": "Si encuentra los datos",
+                "index": 1,
+                "conditions": [
+                  [
+                    {
+                      "a": "{{9.`$1`}}",
+                      "o": "exist"
+                    },
+                    {
+                      "a": "{{9.`$2`}}",
+                      "o": "exist"
+                    },
+                    {
+                      "a": "{{9.`$3`}}",
+                      "o": "exist"
+                    }
+                  ]
+                ],
+                "nodes": [
+                  {
+                    "id": 11,
+                    "module": "trello:searchCards",
+                    "name": "Buscar la tarjeta del pedido"
+                  },
+                  {
+                    "id": 13,
+                    "module": "builtin:BasicRouter",
+                    "name": "if (m├ísDe1Tarjeta)",
+                    "paths": [
+                      {
+                        "route": "No",
+                        "index": 1,
+                        "conditions": [
+                          [
+                            {
+                              "a": "{{11.`__IMTLENGTH__`}}",
+                              "b": "1",
+                              "o": "text:equal"
+                            },
+                            {
+                              "a": "{{11.name}}",
+                              "b": "CONMASA",
+                              "o": "text:contain"
+                            }
+                          ]
+                        ],
+                        "nodes": [
+                          {
+                            "id": 14,
+                            "module": "builtin:BasicRouter",
+                            "name": "if (archivada?)",
+                            "paths": [
+                              {
+                                "route": "No",
+                                "index": 1,
+                                "conditions": [
+                                  [
+                                    {
+                                      "a": "{{11.closed}}",
+                                      "b": "{{false}}",
+                                      "o": "text:equal"
+                                    }
+                                  ]
+                                ],
+                                "nodes": [
+                                  {
+                                    "id": 15,
+                                    "module": "builtin:BasicRouter",
+                                    "name": "if (mdfSinIVA)",
+                                    "paths": [
+                                      {
+                                        "route": "Si",
+                                        "index": 1,
+                                        "conditions": [
+                                          [
+                                            {
+                                              "a": "{{11.name}}",
+                                              "b": "mdf sin IVA",
+                                              "o": "text:contain"
+                                            }
+                                          ]
+                                        ],
+                                        "nodes": [
+                                          {
+                                            "id": 17,
+                                            "module": "regexp:Parser",
+                                            "name": "Precio que abona cliente"
+                                          },
+                                          {
+                                            "id": 24,
+                                            "module": "builtin:BasicRouter",
+                                            "name": "if (precioCoincide)",
+                                            "paths": [
+                                              {
+                                                "route": "Costes correctos",
+                                                "index": 1,
+                                                "conditions": [
+                                                  [
+                                                    {
+                                                      "a": "{{parseNumber(replace(9.`$3`; \".\"; \"\"); \",\")}}",
+                                                      "b": "{{parseNumber(17.`$1`; \".\") * 0.5}}",
+                                                      "o": "number:greater"
+                                                    },
+                                                    {
+                                                      "a": "{{parseNumber(17.`$1`; \".\")}}",
+                                                      "b": "{{parseNumber(replace(9.`$3`; \".\"; ); \",\")}}",
+                                                      "o": "number:greater"
+                                                    }
+                                                  ]
+                                                ],
+                                                "nodes": [
+                                                  {
+                                                    "id": 29,
+                                                    "module": "regexp:Parser",
+                                                    "name": "Filtro el ├║ltimo correo"
+                                                  },
+                                                  {
+                                                    "id": 28,
+                                                    "module": "openai-gpt-3:CreateCompletion",
+                                                    "name": "Obtiene formato de plazo"
+                                                  },
+                                                  {
+                                                    "id": 100,
+                                                    "module": "openai-gpt-3:CreateCompletion",
+                                                    "name": "Resumir ├║ltimo correo"
+                                                  },
+                                                  {
+                                                    "id": 61,
+                                                    "module": "trello:makeApiCall",
+                                                    "name": "Extrae campo \"confirmado\""
+                                                  },
+                                                  {
+                                                    "id": 62,
+                                                    "module": "trello:setACustomFieldOnACard",
+                                                    "name": "Marca campo confirmado"
+                                                  },
+                                                  {
+                                                    "id": 63,
+                                                    "module": "regexp:Parser",
+                                                    "name": "Obtiene plazo"
+                                                  },
+                                                  {
+                                                    "id": 101,
+                                                    "module": "trello:editACard",
+                                                    "name": "Reemplazar mdf sin IVA"
+                                                  },
+                                                  {
+                                                    "id": 64,
+                                                    "module": "freescout:MakeAPICall",
+                                                    "name": "A├▒adir \"Gestionado\" al asunto"
+                                                  },
+                                                  {
+                                                    "id": 65,
+                                                    "module": "freescout:MakeAPICall",
+                                                    "name": "Obtiene la conversaci├│n"
+                                                  },
+                                                  {
+                                                    "id": 83,
+                                                    "module": "builtin:BasicRouter",
+                                                    "name": "if (nosIndicaronPlazo)",
+                                                    "paths": [
+                                                      {
+                                                        "route": "Si nos indicaron un plazo",
+                                                        "index": 1,
+                                                        "conditions": [],
+                                                        "nodes": [
+                                                          {
+                                                            "id": 84,
+                                                            "module": "builtin:BasicRouter",
+                                                            "name": "if (superaPlazoInicial)",
+                                                            "paths": [
+                                                              {
+                                                                "route": "No supera el plazo",
+                                                                "index": 1,
+                                                                "conditions": [],
+                                                                "nodes": [
+                                                                  {
+                                                                    "id": 85,
+                                                                    "module": "trello:createACommentInACard",
+                                                                    "name": "Comentar"
+                                                                  },
+                                                                  {
+                                                                    "id": 86,
+                                                                    "module": "builtin:BasicRouter",
+                                                                    "name": "if (env├¡anEllos?)",
+                                                                    "paths": [
+                                                                      {
+                                                                        "route": "Ruta A",
+                                                                        "index": 1,
+                                                                        "conditions": [],
+                                                                        "nodes": [
+                                                                          {
+                                                                            "id": 87,
+                                                                            "module": "freescout:MakeAPICall",
+                                                                            "name": "Confirma pedido"
+                                                                          }
+                                                                        ]
+                                                                      },
+                                                                      {
+                                                                        "route": "THEM",
+                                                                        "index": 2,
+                                                                        "conditions": [
+                                                                          [
+                                                                            {
+                                                                              "a": "{{11.name}}",
+                                                                              "b": "CONMASA THEM",
+                                                                              "o": "text:contain"
+                                                                            }
+                                                                          ]
+                                                                        ],
+                                                                        "nodes": [
+                                                                          {
+                                                                            "id": 88,
+                                                                            "module": "freescout:MakeAPICall",
+                                                                            "name": "Confirma pedido"
+                                                                          }
+                                                                        ]
+                                                                      }
+                                                                    ]
+                                                                  }
+                                                                ]
+                                                              },
+                                                              {
+                                                                "route": "Supera el plazo inicial",
+                                                                "index": 2,
+                                                                "conditions": [
+                                                                  [
+                                                                    {
+                                                                      "a": "{{parseDate(28.result; \"D/M/YYYY\") > parseDate(63.`$1`; \"D/M/YYYY\")}}",
+                                                                      "b": "{{true}}",
+                                                                      "o": "text:equal"
+                                                                    }
+                                                                  ]
+                                                                ],
+                                                                "nodes": [
+                                                                  {
+                                                                    "id": 89,
+                                                                    "module": "trello:createACommentInACard",
+                                                                    "name": "Comentar"
+                                                                  },
+                                                                  {
+                                                                    "id": 90,
+                                                                    "module": "trello:editACard",
+                                                                    "name": "Vencer hoy"
+                                                                  },
+                                                                  {
+                                                                    "id": 95,
+                                                                    "module": "freescout:MakeAPICall",
+                                                                    "name": "Confirma pedido"
+                                                                  }
+                                                                ]
+                                                              }
+                                                            ]
+                                                          }
+                                                        ]
+                                                      },
+                                                      {
+                                                        "route": "",
+                                                        "index": 2,
+                                                        "conditions": [
+                                                          [
+                                                            {
+                                                              "a": "{{28.result}}",
+                                                              "b": "No hay",
+                                                              "o": "text:contain"
+                                                            }
+                                                          ]
+                                                        ],
+                                                        "nodes": [
+                                                          {
+                                                            "id": 91,
+                                                            "module": "trello:createACommentInACard",
+                                                            "name": "Comentar"
+                                                          },
+                                                          {
+                                                            "id": 92,
+                                                            "module": "builtin:BasicRouter",
+                                                            "name": "if (env├¡anEllos?)",
+                                                            "paths": [
+                                                              {
+                                                                "route": "Ruta A",
+                                                                "index": 1,
+                                                                "conditions": [],
+                                                                "nodes": [
+                                                                  {
+                                                                    "id": 93,
+                                                                    "module": "freescout:MakeAPICall",
+                                                                    "name": "Confirma pedido"
+                                                                  }
+                                                                ]
+                                                              },
+                                                              {
+                                                                "route": "THEM",
+                                                                "index": 2,
+                                                                "conditions": [
+                                                                  [
+                                                                    {
+                                                                      "a": "{{11.name}}",
+                                                                      "b": "CONMASA THEM",
+                                                                      "o": "text:contain"
+                                                                    }
+                                                                  ]
+                                                                ],
+                                                                "nodes": [
+                                                                  {
+                                                                    "id": 94,
+                                                                    "module": "freescout:MakeAPICall",
+                                                                    "name": "Confirma pedido"
+                                                                  }
+                                                                ]
+                                                              }
+                                                            ]
+                                                          }
+                                                        ]
+                                                      }
+                                                    ]
+                                                  }
+                                                ]
+                                              },
+                                              {
+                                                "route": "Ganamos mucho",
+                                                "index": 2,
+                                                "conditions": [],
+                                                "nodes": [
+                                                  {
+                                                    "id": 30,
+                                                    "module": "trello:createACommentInACard",
+                                                    "name": "Comentar ganamos mucho"
+                                                  },
+                                                  {
+                                                    "id": 32,
+                                                    "module": "trello:editACard",
+                                                    "name": "Vencer hoy"
+                                                  },
+                                                  {
+                                                    "id": 33,
+                                                    "module": "freescout:MakeAPICall",
+                                                    "name": "A├▒adir \"Gestionado\" al asunto"
+                                                  }
+                                                ]
+                                              },
+                                              {
+                                                "route": "Perdemos dinero",
+                                                "index": 3,
+                                                "conditions": [
+                                                  [
+                                                    {
+                                                      "a": "{{parseNumber(9.`$3`; \",\")}}",
+                                                      "b": "{{parseNumber(17.`$1`; \".\")}}",
+                                                      "o": "number:greater"
+                                                    }
+                                                  ]
+                                                ],
+                                                "nodes": [
+                                                  {
+                                                    "id": 31,
+                                                    "module": "trello:createACommentInACard",
+                                                    "name": "Comentar error en precio"
+                                                  },
+                                                  {
+                                                    "id": 34,
+                                                    "module": "trello:editACard",
+                                                    "name": "Vencer hoy"
+                                                  },
+                                                  {
+                                                    "id": 35,
+                                                    "module": "freescout:MakeAPICall",
+                                                    "name": "Obtiene la conversaci├│n"
+                                                  },
+                                                  {
+                                                    "id": 36,
+                                                    "module": "freescout:MakeAPICall",
+                                                    "name": "Pausa pedido"
+                                                  },
+                                                  {
+                                                    "id": 37,
+                                                    "module": "freescout:MakeAPICall",
+                                                    "name": "A├▒adir \"Gestionado\" al asunto"
+                                                  },
+                                                  {
+                                                    "id": 38,
+                                                    "module": "http:ActionSendDataAPIKeyAuth",
+                                                    "name": "[PS] Estado Incidencia (68)"
+                                                  }
+                                                ]
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "route": "No",
+                                        "index": 2,
+                                        "conditions": [],
+                                        "nodes": [
+                                          {
+                                            "id": 22,
+                                            "module": "trello:createACommentInACard",
+                                            "name": "Comentar por qu├® no se actualiz├│ mdf sin iva"
+                                          },
+                                          {
+                                            "id": 23,
+                                            "module": "freescout:MakeAPICall",
+                                            "name": "A├▒adir \"Gestionado\" al asunto"
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              {
+                                "route": "Si estaba archivada",
+                                "index": 2,
+                                "conditions": [],
+                                "nodes": [
+                                  {
+                                    "id": 18,
+                                    "module": "trello:archiveOrUnarchiveACard",
+                                    "name": "Desarchivar"
+                                  },
+                                  {
+                                    "id": 19,
+                                    "module": "trello:createACommentInACard",
+                                    "name": "Comentar"
+                                  },
+                                  {
+                                    "id": 20,
+                                    "module": "trello:editACard",
+                                    "name": "Vencer hoy"
+                                  },
+                                  {
+                                    "id": 21,
+                                    "module": "freescout:MakeAPICall",
+                                    "name": "A├▒adir \"Gestionado\" al asunto"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "route": "Si es +1 o no es la tarjeta",
+                        "index": 2,
+                        "conditions": [],
+                        "nodes": [
+                          {
+                            "id": 16,
+                            "module": "google-sheets:addRow",
+                            "name": "No encuentra tarjeta o es m├ís de 1"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "route": "Ruta B",
+                "index": 2,
+                "conditions": [],
+                "nodes": [
+                  {
+                    "id": 12,
+                    "module": "google-sheets:addRow",
+                    "name": "No encuentra match"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
