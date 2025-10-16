@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}DocGen - Procesar Blueprint{% endblock %}
+
+{% block content %}
+<div class="landing-container">
+    <div class="hero">
+        <h1 class="hero-title">Procesa tu Blueprint</h1>
+        <p class="hero-description">
+            Sube tu archivo JSON y obtén documentación profesional generada automáticamente
+        </p>
+    </div>
+
+    <div class="upload-section">
+        <div class="upload-card">
+            <h2 class="upload-title">Subir Archivo</h2>
+            <p class="upload-description">Selecciona tu archivo .json de blueprint</p>
+            
+            <form action="/build" method="post" enctype="multipart/form-data" class="upload-form">
+                <div class="file-input-container">
+                    <input type="file" 
+                           name="file" 
+                           id="file-input"
+                           accept="application/json" 
+                           required 
+                           class="file-input" />
+                    <label for="file-input" class="file-input-label">
+                        <span class="file-input-text">Seleccionar archivo JSON</span>
+                        <span class="file-input-button">Examinar</span>
+                    </label>
+                </div>
+                
+                <button type="submit" class="submit-button">
+                    <span class="button-text">Procesar Blueprint</span>
+                    <span class="button-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12h14"></path>
+                            <path d="M12 5l7 7-7 7"></path>
+                        </svg>
+                    </span>
+                </button>
+            </form>
+            
+            <div class="file-info">
+                <p><strong>Formato:</strong> Archivos .json</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('file-input');
+    const fileInputText = document.querySelector('.file-input-text');
+    
+    fileInput.addEventListener('change', function(e) {
+        if (e.target.files.length > 0) {
+            const fileName = e.target.files[0].name;
+            fileInputText.textContent = fileName;
+            
+            if (!fileName.toLowerCase().endsWith('.json')) {
+                fileInputText.textContent = '⚠️ Archivo debe ser .json';
+                fileInputText.style.color = '#EF4444';
+            } else {
+                fileInputText.style.color = '#10B981';
+            }
+        } else {
+            fileInputText.textContent = 'Seleccionar archivo JSON';
+            fileInputText.style.color = '#6B7280';
+        }
+    });
+});
+</script>
+{% endblock %}

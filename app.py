@@ -1,5 +1,7 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from pathlib import Path
 import uvicorn
 from pipeline import run_pipeline, PipelineError, clean_runs
@@ -8,25 +10,14 @@ from pipeline import run_pipeline, PipelineError, clean_runs
 app = FastAPI(title="DocGen Pipeline")
 ROOT = Path(__file__).parent.resolve()
 
-
-HTML_FORM = """
-<!doctype html>
-<html>
-<head><meta charset="utf-8"><title>DocGen</title></head>
-<body style="font-family: system-ui; max-width: 720px; margin: 40px auto;">
-<h1>Subir blueprint (.json)</h1>
-<form action="/build" method="post" enctype="multipart/form-data">
-<input type="file" name="file" accept="application/json" required />
-<button type="submit">Procesar</button>
-</form>
-</body>
-</html>
-"""
+# Configurar archivos estáticos y templates
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
 
 
 @app.get("/", response_class=HTMLResponse)
-async def index():
-    return HTML_FORM
+async def index(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
 
 @app.post("/build")
 async def build(file: UploadFile = File(...)):
