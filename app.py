@@ -34,7 +34,10 @@ async def build(file: UploadFile = File(...)):
             workdir=ROOT,
             blueprint_title=blueprint_title,  # <-- nuevo arg
         )
-        return FileResponse(path=out_html, filename=out_html.name, media_type="text/html")
+        # Remover prefijos tipo "<numero>-" solo para la descarga del usuario
+        import re
+        download_name = re.sub(r"^\d+-", "", out_html.name, count=1)
+        return FileResponse(path=out_html, filename=download_name, media_type="text/html")
     except PipelineError as e:
         raise HTTPException(status_code=500, detail=str(e))
 
