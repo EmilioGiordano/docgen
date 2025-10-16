@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>EGIen Nuevo sistema de facturas (TESTEANDO)</title>
+<link rel="stylesheet" href="file:///C:/Users/giord/Desktop/docgen/public/css/theme-light.css">
+<link rel="stylesheet" href="file:///C:/Users/giord/Desktop/docgen/public/css/ref-links.css">
+</head>
+<script src="file:///C:/Users/giord/Desktop/docgen/public/js/toc-toggle.js" defer></script>
+<script src="file:///C:/Users/giord/Desktop/docgen/public/js/ref-links.js" defer></script>
+<body>
+<div class="scenario-title" data-scenario-id="">
+  <span class="scenario-badge">SCENARIO</span>
+  <span class="scenario-name">EGIen Nuevo sistema de facturas (TESTEANDO)</span>
+</div>
+<ul>
+<li>[17]  - <code>gateway:CustomWebHook</code></li>
+<li>[26] JSON labels por idioma - <code>json:ParseJSON</code></li>
+<li>[90] JSON-POST - <code>util:SetVariables</code></li>
+<li>[91] Elegir variables por idioma - <code>util:SetVariables</code></li>
+<li>[116] HTTP Basic Auth - <code>http:ActionSendDataBasicAuth</code></li>
+<li>[118] Insert order - <code>nocodb:create</code></li>
+<li>[119] Insert invoice - <code>nocodb:create</code></li>
+<li>[122]  - <code>regexp:Replace</code></li>
+<li>ROUTER [125] Router<ul>
+<li><strong>Ruta: </strong> - <em>Condicion:</em> and([cond({{116.statusCode}},text:equal,200)])</li>
+<ul>
+<li>[117] Crear archivo .PDF en Drive - <code>google-drive:uploadAFile</code></li>
+<li>[124]  - <code>nocodb:updateRecord</code></li>
+</ul>
+<li><strong>Ruta: No encuentra</strong></li>
+<ul>
+<li>[126] Registrar error - <code>google-sheets:addRow</code></li>
+</ul>
+</ul></li>
+</ul>
+</body>
+</html>
