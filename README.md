@@ -17,7 +17,7 @@ dos2unix ./data/2-reduced-jsons/output.json
 jq -f -r ./jq-scripts/json-to-facts.jq ./data/2-reduced-jsnos/escenario-reducido.json > ./data/3-facts-base/escenario-facts.pl
 ```
 
-**Limpiar archivo**http://127.0.0.1:8000/
+**Limpiar archivo**
 ```bash
 dos2unix ./data/3-facts-base/escenario-facts.pl
 ```
